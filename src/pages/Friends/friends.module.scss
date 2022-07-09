@@ -1,0 +1,15 @@
+.container {
+    box-sizing: border-box;
+    background-color: #f0f2f547;
+}
+.header {
+    padding: 10px 150px;
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    h2 {
+        margin: 0;
+    }
+}

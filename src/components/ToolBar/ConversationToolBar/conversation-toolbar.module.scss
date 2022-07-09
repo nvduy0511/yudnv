@@ -1,0 +1,19 @@
+.container {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+    h2 {
+        margin: 0;
+        font-size: 20px;
+    }
+    .container-icon {
+        font-size: 30px;
+        color: #007aff;
+        &:hover {
+            color: #007bff8a;
+            cursor: pointer;
+        }
+    }
+}

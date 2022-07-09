@@ -1,0 +1,25 @@
+.message-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 5px;
+
+    h2 {
+        flex: 1;
+        margin: 0;
+        font-size: 20px;
+        text-align: center;
+    }
+    .toolbar {
+        display: flex;
+        gap: 17px;
+        svg {
+            font-size: 28px;
+            color: #007aff;
+            &:hover {
+                color: #007bff8a;
+                cursor: pointer;
+            }
+        }
+    }
+}

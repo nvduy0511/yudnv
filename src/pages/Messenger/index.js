@@ -33,7 +33,7 @@ export default function Messenger() {
                         const res = await userApi.findOrCreate(user_req);
                         localStorage.setItem('user', JSON.stringify(res.data.user));
 
-                        socket.emit('joinRoom', res.data.user.uid);
+                        socket.emit('joinRoom', res.data.user._id);
                     } catch (error) {
                         console.log(error);
                     }

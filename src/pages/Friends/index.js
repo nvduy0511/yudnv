@@ -12,7 +12,7 @@ export default function Friends() {
     const current_user = JSON.parse(localStorage.getItem('user'));
     useEffect(() => {
         const getData = async () => {
-            const res = await userApi.getAllNotIcludeMe(current_user.uid);
+            const res = await userApi.getAllNotIcludeMe(current_user._id);
             setUsers(res.data);
         };
         getData();

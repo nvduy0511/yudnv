@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './setting.module.scss';
 
@@ -7,23 +7,14 @@ import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupsIcon from '@mui/icons-material/Groups';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { Avatar } from '@mui/material';
 import { getAuth, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-
+import InforUser from '../InforUser';
 const cx = classNames.bind(styles);
 
 function Setting(props) {
     const navigate = useNavigate();
-    const [user, setUser] = useState({});
-
-    useEffect(() => {
-        const id_timeout = setTimeout(() => {
-            const user_local = JSON.parse(sessionStorage.getItem('user'));
-            setUser(user_local);
-        }, 100);
-        return () => clearTimeout(id_timeout);
-    }, []);
+    const [infoUserVisible, setInforUserVisible] = useState(false);
 
     const logOut = () => {
         const auth = getAuth();
@@ -31,7 +22,7 @@ function Setting(props) {
             .then(() => {
                 alert('SignOut Success');
                 localStorage.clear();
-                navigate('/');
+                navigate('/login');
             })
             .catch((error) => {
                 alert('SignOut Fail');
@@ -42,25 +33,28 @@ function Setting(props) {
             <label htmlFor="nav-input" style={{ display: 'flex', alignItems: 'center' }}>
                 <SettingsIcon fontSize="30px" className={cx('setting-icon')} />
             </label>
-            <input type={'checkbox'} hidden className={cx('nav-input')} id="nav-input"></input>
+            <input
+                type={'checkbox'}
+                hidden
+                className={cx('nav-input')}
+                id="nav-input"
+                onChange={() => setInforUserVisible((p) => !p)}
+            ></input>
             <label htmlFor="nav-input" className={cx('overlay')} />
 
             <div className={cx('nav')}>
                 <label htmlFor="nav-input">
                     <CloseOutlinedIcon
-                        sx={{ position: 'absolute', top: '5px', right: '5px', color: '#000000ad', cursor: 'pointer' }}
+                        sx={{
+                            position: 'absolute',
+                            top: '5px',
+                            right: '5px',
+                            color: '#000000ad',
+                            cursor: 'pointer',
+                        }}
                     />
                 </label>
-
-                <div className={cx('nav-user')}>
-                    <Avatar
-                        sx={{ width: '100px', height: '100px', border: 'solid 1px #c6c6da' }}
-                        src={user && user.photoURL}
-                    >
-                        U
-                    </Avatar>
-                    <h6 style={{ margin: '12px 0 0', fontSize: '18px' }}>{user && user.displayName}</h6>
-                </div>
+                {infoUserVisible && <InforUser />}
                 <ul className={cx('nav-list')}>
                     <label htmlFor="nav-input" className={cx('nav-item')}>
                         <PersonIcon />

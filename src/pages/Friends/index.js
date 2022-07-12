@@ -9,7 +9,7 @@ import SearchText from '../../components/ToolBar/SearchText';
 const cx = classNames.bind(styles);
 export default function Friends() {
     const [users, setUsers] = useState([]);
-    const current_user = JSON.parse(sessionStorage.getItem('user'));
+    const current_user = JSON.parse(localStorage.getItem('user'));
     useEffect(() => {
         const getData = async () => {
             const res = await userApi.getAllNotIcludeMe(current_user.uid);

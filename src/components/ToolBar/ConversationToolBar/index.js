@@ -3,7 +3,6 @@ import classNames from 'classnames/bind';
 import styles from './conversation-toolbar.module.scss';
 
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import 'tippy.js/dist/tippy.css';
 import Setting from '../Setting';
 import { useNavigate } from 'react-router-dom';
 

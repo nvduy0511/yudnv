@@ -5,13 +5,17 @@ const userApi = {
         const url = `user`;
         return axiosClient.post(url, user);
     },
+    getOne: (_id) => {
+        const url = `user/get-one?_id=${_id}`;
+        return axiosClient.get(url, { _id });
+    },
     getAll: () => {
         const url = 'user/get-all';
         return axiosClient.get(url);
     },
-    getAllNotIcludeMe: (uid) => {
-        const url = `user/get-all-not-include-me?uid=${uid}`;
-        return axiosClient.get(url, { uid });
+    getAllNotIcludeMe: (_id) => {
+        const url = `user/get-all-not-include-me?_id=${_id}`;
+        return axiosClient.get(url, { _id });
     },
 };
 export default userApi;

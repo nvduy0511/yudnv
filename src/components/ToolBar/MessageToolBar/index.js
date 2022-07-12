@@ -7,10 +7,10 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const cx = classNames.bind(styles);
 
-export default function index() {
+export default function MessageToolBar({ displayNameReceiver = '' }) {
     return (
         <div className={cx('message-toolbar')}>
-            <h2>Nguyễn Văn Duy</h2>
+            <h2>{displayNameReceiver}</h2>
             <div className={cx('toolbar')}>
                 <LocalPhoneIcon />
                 <VideocamIcon />

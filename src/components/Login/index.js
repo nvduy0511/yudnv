@@ -16,7 +16,7 @@ export default function Login() {
             if (user) {
                 const findOrCreateUser = async () => {
                     const user_req = {
-                        uid: user.uid,
+                        _id: user.uid,
                         displayName: user.displayName,
                         photoURL: user.photoURL,
                         email: user.email,
@@ -24,13 +24,14 @@ export default function Login() {
 
                     try {
                         const res = await userApi.findOrCreate(user_req);
-                        sessionStorage.setItem('user', JSON.stringify(res.data.user));
+                        localStorage.setItem('user', JSON.stringify(res.data.user));
+                        unRegisterAuthObserver();
                     } catch (error) {
                         console.log(error);
                     }
                 };
                 findOrCreateUser();
-                navigate('/message');
+                navigate('/');
             }
         });
 

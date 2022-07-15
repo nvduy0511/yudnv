@@ -3,11 +3,12 @@ import { createSlice } from '@reduxjs/toolkit';
 const messageSlice = createSlice({
     name: 'messageSlice',
     initialState: {
-        friendSelect: {},
+        conversationSelect: {},
     },
     reducers: {
-        selectFriend: (state, action) => {
-            state.friendSelect = action.payload;
+        accessConversation: (state, action) => {
+            console.log('dispatch with data : ', action.payload);
+            state.conversationSelect = action.payload;
         },
     },
 });

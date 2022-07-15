@@ -7,6 +7,7 @@ const socketSlice = createSlice({
     },
     reducers: {
         connect: (state, action) => {
+            console.log('connect - socket in redux');
             state.socketCurrent = action.payload;
         },
     },

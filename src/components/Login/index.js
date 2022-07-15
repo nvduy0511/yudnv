@@ -6,11 +6,13 @@ import FirebaseUIAuth from 'react-firebaseui-localized';
 import firebase, { uiConfig, firebaseApp } from '../../configs/firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import userApi from '../../apis/userApi';
-
+import userSlice from '../../redux/userSlice';
+import { useDispatch } from 'react-redux';
 const cx = classNames.bind(styles);
 
 export default function Login() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     useEffect(() => {
         const unRegisterAuthObserver = firebase.auth().onAuthStateChanged((user) => {
             if (user) {
@@ -18,14 +20,12 @@ export default function Login() {
                     const user_req = {
                         _id: user.uid,
                         displayName: user.displayName,
-                        photoURL: user.photoURL,
                         email: user.email,
                     };
 
                     try {
                         const res = await userApi.findOrCreate(user_req);
-                        localStorage.setItem('user', JSON.stringify(res.data.user));
-                        unRegisterAuthObserver();
+                        dispatch(userSlice.actions.login(res.data.user));
                     } catch (error) {
                         console.log(error);
                     }
@@ -38,6 +38,7 @@ export default function Login() {
         return () => unRegisterAuthObserver();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
     return (
         <div className={cx('container')}>
             <div className={cx('container-login')}>

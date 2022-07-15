@@ -1,59 +1,131 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import classNames from 'classnames/bind';
 import styles from './message-list.module.scss';
 import MessageToolbar from '../ToolBar/MessageToolBar';
 import MessageListItem from '../MessageListItem';
 import Compose from '../Compose';
 import { useSelector } from 'react-redux';
-import conversationApi from '../../apis/conversationApi';
+import messageApi from '../../apis/messageApi';
+import store from '../../redux/store';
+
 const cx = classNames.bind(styles);
 
 export default function MessageList() {
-    const socket = useSelector((state) => state.socket.socketCurrent);
-    const friendSelect = useSelector((state) => state.message.friendSelect);
-    const [user, setUser] = useState({});
-    const [idRoom, setIdRoom] = useState('');
+    const socket = store.getState().socket.socketCurrent;
+    const currentUser = useSelector((state) => state.user.currentUser);
+    const conversationSelect = useSelector((state) => state.message.conversationSelect);
+    const [nameConversation, setNameConversation] = useState('');
+    const [messages, setMessages] = useState([]);
+    const messageContentRef = useRef(null);
+
+    const scrollToBottom = (behavior) => {
+        messageContentRef.current?.scrollIntoView({ behavior: behavior });
+    };
 
     useEffect(() => {
-        if (Object.keys(friendSelect).length === 0) {
-            setUser({
-                displayName: 'Unknow ...',
-            });
+        const listener = (data) => {
+            console.log(
+                `message from ${data.conversation}: ${data.content}, sender: ${data.sender}`,
+            );
+            setMessages((message) => [...message, data]);
+        };
+        socket.on('message', listener);
+
+        if (Object.keys(conversationSelect).length === 0) {
+            setNameConversation('Chọn tin nhắn');
         } else {
-            setIdRoom(friendSelect._id);
-            setUser(friendSelect);
             //check room or create room
-            const accessConversation = async () => {
-                const res = await conversationApi.accessConversation({
-                    id_receiver: '8HemMdDKPYN9bMOQBjt3arHJnLX2',
-                    id_send: 'xLPhmHqWfmfmtuFpOTi0gXySAZf1',
-                });
-
-                console.log(res.data);
+            socket.emit('joinRoom', conversationSelect._id);
+            conversationSelect.users.some((item) => {
+                if (item._id !== currentUser._id) setNameConversation(item.displayName);
+                return item._id !== currentUser._id;
+            });
+            const getMessages = async () => {
+                try {
+                    const res = await messageApi.getAllByIdRoom(conversationSelect._id);
+                    console.log(res.data);
+                    setMessages(res.data);
+                } catch (error) {
+                    console.log('Error when call API get messages in MessageList!');
+                }
             };
-            accessConversation();
-
-            socket.emit('joinRoom');
+            getMessages();
         }
+
+        scrollToBottom('auto');
+
+        return () => {
+            socket.off('message', listener);
+            socket.emit('leaveRoom', conversationSelect._id);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [friendSelect]);
-    console.log('idRoom MessageList', idRoom);
+    }, [conversationSelect]);
+
+    useEffect(() => {
+        scrollToBottom('smooth');
+    }, [messages]);
+
+    const renderMessage = () => {
+        const render = messages.map((item, index, elements) => {
+            const isMine = item.sender === currentUser._id;
+            const itemNext = elements[index + 1];
+            const itemPre = elements[index - 1];
+            let startsSequence = false;
+            let isSingle = false;
+            let endsSequence = false;
+
+            if (itemPre) {
+                if (item.sender !== itemPre.sender) {
+                    startsSequence = true;
+                }
+            } else if (!itemPre && itemNext) {
+                if (item.sender === itemNext.sender) startsSequence = true;
+            }
+
+            if (itemNext) {
+                if (item.sender !== itemNext.sender) {
+                    startsSequence = false;
+                    isSingle = true;
+                    if (itemPre && item.sender === itemPre.sender) {
+                        endsSequence = true;
+                        isSingle = false;
+                    }
+                }
+            } else {
+                if (startsSequence) isSingle = true;
+            }
+
+            return (
+                <MessageListItem
+                    key={index}
+                    isMine={isMine}
+                    endsSequence={endsSequence}
+                    startsSequence={startsSequence}
+                    isSingle={isSingle}
+                    content={item.content}
+                />
+            );
+        });
+        return render;
+    };
     return (
         <div className={cx('message-list')}>
             <div className={cx('message-toolbar')}>
-                <MessageToolbar displayNameReceiver={user && user.displayName} />
+                <MessageToolbar displayNameReceiver={nameConversation} />
             </div>
             <div className={cx('message-content')}>
-                <MessageListItem startsSequence />
+                {/* <MessageListItem startsSequence />
                 <MessageListItem endsSequence />
                 <MessageListItem isMine startsSequence />
                 <MessageListItem isMine isSequence />
                 <MessageListItem isMine endsSequence />
                 <MessageListItem isSingle />
-                <MessageListItem isSingle isMine />
+                <MessageListItem isSingle isMine /> */}
+                {renderMessage()}
+                <div ref={messageContentRef}></div>
             </div>
             <div className={cx('message-compose')}>
-                <Compose idRoom={idRoom} />
+                <Compose idRoom={conversationSelect && conversationSelect._id} />
             </div>
         </div>
     );

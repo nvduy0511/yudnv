@@ -13,8 +13,9 @@ const socket = socketIOClient.connect(host);
 
 export default function AppTest() {
     const dispatch = useDispatch();
+
     dispatch(socketSlice.actions.connect(socket));
-    console.log('re-render App');
+
     useEffect(() => {
         return () => {
             socket.disconnect();
@@ -25,7 +26,7 @@ export default function AppTest() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Messenger />} />
+                <Route path="/" element={<Messenger socket={socket} />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/friends" element={<Friends />} />
             </Routes>

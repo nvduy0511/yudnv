@@ -10,6 +10,8 @@ export default function MessageListItem({
     startsSequence = false,
     endsSequence = false,
     isSingle = false,
+    content = `Hello world! This is a long message that will hopefully get wrapped by our message bubble component!
+    We will see how well it works.`,
 }) {
     return (
         <div
@@ -23,10 +25,7 @@ export default function MessageListItem({
             {/* {showTimestamp && <div className="timestamp">{friendlyTimestamp}</div>} */}
 
             <div className={cx('bubble-container')}>
-                <div className={cx('bubble')}>
-                    Hello world! This is a long message that will hopefully get wrapped by our message bubble component!
-                    We will see how well it works.
-                </div>
+                <div className={cx('bubble')}>{content}</div>
             </div>
         </div>
     );

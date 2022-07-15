@@ -60,9 +60,11 @@
     }
 }
 
-.nav-item p {
+.nav-item p,
+.nav-item a {
     color: #666666;
     margin: 10px;
+    text-decoration: none;
 }
 .nav-input:checked ~ .overlay {
     display: block;

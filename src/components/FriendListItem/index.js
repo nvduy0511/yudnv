@@ -5,15 +5,30 @@ import Button from '@mui/material/Button';
 import { useDispatch } from 'react-redux';
 import messageSlice from '../../redux/messageSlice';
 import { useNavigate } from 'react-router-dom';
+import conversationApi from '../../apis/conversationApi';
+import store from '../../redux/store';
 
 const cx = classNames.bind(styles);
 
 export default function FriendListItem({ dataUser }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const currentUser = store.getState().user.currentUser;
+
     const handleClickItem = () => {
-        dispatch(messageSlice.actions.selectFriend(dataUser));
-        navigate('/');
+        const accessConversation = async () => {
+            try {
+                const res = await conversationApi.accessConversation({
+                    id_receiver: dataUser._id,
+                    id_send: currentUser._id,
+                });
+                dispatch(messageSlice.actions.accessConversation(res.data));
+                navigate('/');
+            } catch (error) {
+                alert('Error when access conversation: ', error);
+            }
+        };
+        accessConversation();
     };
 
     return (

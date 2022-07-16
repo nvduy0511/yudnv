@@ -7,8 +7,19 @@ import Compose from '../Compose';
 import { useSelector } from 'react-redux';
 import messageApi from '../../apis/messageApi';
 import store from '../../redux/store';
+import Lottie from 'react-lottie';
+import animationData from '../../animation/typing.json';
 
 const cx = classNames.bind(styles);
+
+const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: animationData,
+    rendererSettings: {
+        preserveAspectRatio: 'xMidYMid slice',
+    },
+};
 
 export default function MessageList() {
     const socket = store.getState().socket.socketCurrent;
@@ -16,6 +27,7 @@ export default function MessageList() {
     const conversationSelect = useSelector((state) => state.message.conversationSelect);
     const [nameConversation, setNameConversation] = useState('');
     const [messages, setMessages] = useState([]);
+    const [isTyping, setIsTyping] = useState(false);
     const messageContentRef = useRef(null);
 
     const scrollToBottom = (behavior) => {
@@ -30,6 +42,16 @@ export default function MessageList() {
             setMessages((message) => [...message, data]);
         };
         socket.on('message', listener);
+        const onTyping = () => {
+            console.log('onTyping');
+            setIsTyping(true);
+        };
+        const offTyping = () => {
+            console.log('offTyping');
+            setIsTyping(false);
+        };
+        socket.on('onTyping', onTyping);
+        socket.on('offTyping', offTyping);
 
         if (Object.keys(conversationSelect).length === 0) {
             setNameConversation('Chọn tin nhắn');
@@ -52,10 +74,10 @@ export default function MessageList() {
             getMessages();
         }
 
-        scrollToBottom('auto');
-
         return () => {
             socket.off('message', listener);
+            socket.off('typing', onTyping);
+            socket.off('stopTyping', offTyping);
             socket.emit('leaveRoom', conversationSelect._id);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,7 +85,7 @@ export default function MessageList() {
 
     useEffect(() => {
         scrollToBottom('smooth');
-    }, [messages]);
+    }, [messages, isTyping]);
 
     const renderMessage = () => {
         const render = messages.map((item, index, elements) => {
@@ -122,6 +144,15 @@ export default function MessageList() {
                 <MessageListItem isSingle />
                 <MessageListItem isSingle isMine /> */}
                 {renderMessage()}
+                {isTyping && (
+                    <div style={{ height: '40px' }}>
+                        <Lottie
+                            options={defaultOptions}
+                            width={70}
+                            style={{ margin: 0, marginLeft: -10 }}
+                        />
+                    </div>
+                )}
                 <div ref={messageContentRef}></div>
             </div>
             <div className={cx('message-compose')}>

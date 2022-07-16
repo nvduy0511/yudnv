@@ -9,7 +9,7 @@ import messageApi from '../../apis/messageApi';
 import store from '../../redux/store';
 const cx = classNames.bind(styles);
 
-export default function Compose({ idRoom }) {
+export default function Compose({ idRoom, userConversation }) {
     const editTextRef = useRef(null);
     const [message, setMessage] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -29,14 +29,15 @@ export default function Compose({ idRoom }) {
             content: message,
             sender: user._id,
         };
-        socket.emit('sendMessage', data);
+        socket.emit('sendMessage', { ...data, members: userConversation });
+
         sendMessageToServer(data);
+
         setIsTyping(false);
         socket.emit('offTyping', idRoom);
+
         setMessage('');
         editTextRef.current.focus();
-
-        // sendMessageToServer(data);
     };
     const handleChangeMessage = (e) => {
         setMessage(e.target.value);

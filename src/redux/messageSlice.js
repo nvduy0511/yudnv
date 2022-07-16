@@ -7,7 +7,6 @@ const messageSlice = createSlice({
     },
     reducers: {
         accessConversation: (state, action) => {
-            console.log('dispatch with data : ', action.payload);
             state.conversationSelect = action.payload;
         },
     },

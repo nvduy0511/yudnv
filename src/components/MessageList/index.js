@@ -28,6 +28,7 @@ export default function MessageList() {
     const [nameConversation, setNameConversation] = useState('');
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
+    const [userConversation, setUserConversation] = useState([]);
     const messageContentRef = useRef(null);
 
     const scrollToBottom = (behavior) => {
@@ -62,10 +63,16 @@ export default function MessageList() {
                 if (item._id !== currentUser._id) setNameConversation(item.displayName);
                 return item._id !== currentUser._id;
             });
+
+            const userConversation = [];
+            for (const item of conversationSelect.users) {
+                if (item._id !== currentUser._id) userConversation.push(item._id);
+            }
+            setUserConversation(userConversation);
+
             const getMessages = async () => {
                 try {
                     const res = await messageApi.getAllByIdRoom(conversationSelect._id);
-                    console.log(res.data);
                     setMessages(res.data);
                 } catch (error) {
                     console.log('Error when call API get messages in MessageList!');
@@ -76,8 +83,8 @@ export default function MessageList() {
 
         return () => {
             socket.off('message', listener);
-            socket.off('typing', onTyping);
-            socket.off('stopTyping', offTyping);
+            socket.off('onTyping', onTyping);
+            socket.off('offTyping', offTyping);
             socket.emit('leaveRoom', conversationSelect._id);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -156,7 +163,10 @@ export default function MessageList() {
                 <div ref={messageContentRef}></div>
             </div>
             <div className={cx('message-compose')}>
-                <Compose idRoom={conversationSelect && conversationSelect._id} />
+                <Compose
+                    idRoom={conversationSelect && conversationSelect._id}
+                    userConversation={userConversation}
+                />
             </div>
         </div>
     );

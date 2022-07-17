@@ -1,70 +1,112 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import ConversationTollbar from '../ToolBar/ConversationToolBar';
 import ConversationListItem from '../ConversationListItem';
 import classNames from 'classnames/bind';
 import styles from './conversation-list.module.scss';
 import SearchText from '../ToolBar/SearchText';
-import store from '../../redux/store';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import conversationApi from '../../apis/conversationApi';
+import messageSlice from '../../redux/messageSlice';
+import userApi from '../../apis/userApi';
+import store from '../../redux/store';
+import Notify from '../../components/Notify';
+import toast from 'react-hot-toast';
 const cx = classNames.bind(styles);
 
 export default function ConversationList() {
-    const [conversation, setConversation] = useState([]);
+    const dispatch = useDispatch();
+    const socket = store.getState().socket.socketCurrent;
     const currentUser = useSelector((state) => state.user.currentUser);
+    const conversation = useSelector((state) => state.message.conversation);
+    const conversationSelect = useSelector((state) => state.message.conversationSelect);
+
+    const getConversation = async () => {
+        console.log('------------init conversation -------------');
+        try {
+            const res = await conversationApi.getAllByIdUser(currentUser._id);
+            dispatch(messageSlice.actions.initConversation(res.data));
+        } catch (error) {
+            console.log('Error call api get Conversation, ', error);
+        }
+    };
+
     useEffect(() => {
-        const getConversation = async () => {
-            try {
-                const res = await conversationApi.getAllByIdUser(currentUser._id);
-                setConversation(res.data);
-            } catch (error) {
-                console.log('Error call api get Conversation, ', error);
-            }
+        const notify = (data) => {
+            const fetchInforUser = async () => {
+                try {
+                    const res = await userApi.getOne(data.sender);
+                    console.log('Fetch Data User');
+                    if (data.conversation !== store.getState().message.conversationSelect._id)
+                        toast.custom(
+                            <Notify
+                                userName={res.data.displayName}
+                                message={data.content}
+                                avatarUrl={res.data.photoURL}
+                            />,
+                        );
+                } catch (error) {
+                    console.log('Error fetch userApi', error);
+                }
+            };
+
+            const conversationRead = {
+                idConversation: store.getState().message.conversationSelect._id,
+                idUser: store.getState().user.currentUser._id,
+            };
+
+            dispatch(
+                messageSlice.actions.newMessageInConversation({
+                    ...data,
+                    ...conversationRead,
+                }),
+            );
+            conversationApi.readConversation(conversationRead);
+            fetchInforUser();
         };
+
+        socket.on('notify', notify);
         getConversation();
-    }, [currentUser]);
+
+        return () => {
+            socket.off('notify', notify);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const renderConversation = () => {
         return conversation.map((item, index) => {
             let user_conversation;
-            item.users.some((item) => {
-                if (item._id !== currentUser._id) user_conversation = item;
-                return item._id !== currentUser._id;
+            let isRead = false;
+            item.users.some((i) => {
+                if (i._id !== currentUser._id) user_conversation = i;
+                return i._id !== currentUser._id;
             });
+
+            for (const element of item.readBy) {
+                if (element === currentUser._id) {
+                    isRead = true;
+                }
+            }
             return (
                 <ConversationListItem
+                    idUser={currentUser._id}
                     key={index}
                     linkAvatar={user_conversation.photoURL}
                     name={user_conversation.displayName}
                     snippet={item.latestMessage}
                     data={item}
+                    isRead={isRead}
+                    isSelect={item._id === conversationSelect._id}
                 />
             );
         });
     };
+    console.log('re-render conversation List');
     return (
         <div className={cx('container')}>
             <ConversationTollbar />
             <SearchText placeholder="Tìm kiếm tin nhắn" />
-            <div className={cx('conversation-item')}>
-                {conversation && renderConversation()}
-                {/* <ConversationListItem
-                    linkAvatar="https://ps.w.org/user-avatar-reloaded/assets/icon-256x256.png?rev=2540745"
-                    name="Bùi Thái"
-                    snippet="Rất vui được gặp bạn!"
-                />
-                <ConversationListItem
-                    linkAvatar="https://scontent.fsgn2-4.fna.fbcdn.net/v/t1.6435-9/121168892_1034374453677753_8054252095271796378_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=54r2m9ZVpE0AX8n22sk&_nc_ht=scontent.fsgn2-4.fna&oh=00_AT_4W5kLdjI7oF-nlrpu3xYs-vlzb82SJFJRHOvPS_iWZA&oe=62EB596C"
-                    name="Hồng Hường"
-                    snippet="Hello hân hạnh được làm quen"
-                />
-                <ConversationListItem />
-                <ConversationListItem
-                    linkAvatar="https://cdnmedia.thethaovanhoa.vn/Upload/O5NP4aFt6GVwE7JTFAOaA/files/2022/06/son-tung-mtp-va-hai-tu%20(1).jpg"
-                    name="Sơn Tùng"
-                    snippet="Alo bạn đang làm gì đó?"
-                /> */}
-            </div>
+            <div className={cx('conversation-item')}>{conversation && renderConversation()}</div>
         </div>
     );
 }

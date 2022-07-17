@@ -7,7 +7,11 @@ const conversationApi = {
     },
     getAllByIdUser: (id) => {
         const url = `conversation/get-all-by-id-user?id=${id}`;
-        return axiosClient(url, { id });
+        return axiosClient.get(url, { id });
+    },
+    readConversation: (conversation) => {
+        const url = `conversation/read-conversation`;
+        return axiosClient.post(url, conversation);
     },
 };
 export default conversationApi;

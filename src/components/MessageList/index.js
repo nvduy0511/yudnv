@@ -37,12 +37,10 @@ export default function MessageList() {
 
     useEffect(() => {
         const listener = (data) => {
-            console.log(
-                `message from ${data.conversation}: ${data.content}, sender: ${data.sender}`,
-            );
             setMessages((message) => [...message, data]);
         };
         socket.on('message', listener);
+
         const onTyping = () => {
             console.log('onTyping');
             setIsTyping(true);
@@ -85,6 +83,7 @@ export default function MessageList() {
             socket.off('message', listener);
             socket.off('onTyping', onTyping);
             socket.off('offTyping', offTyping);
+            setIsTyping(false);
             socket.emit('leaveRoom', conversationSelect._id);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,13 +142,6 @@ export default function MessageList() {
                 <MessageToolbar displayNameReceiver={nameConversation} />
             </div>
             <div className={cx('message-content')}>
-                {/* <MessageListItem startsSequence />
-                <MessageListItem endsSequence />
-                <MessageListItem isMine startsSequence />
-                <MessageListItem isMine isSequence />
-                <MessageListItem isMine endsSequence />
-                <MessageListItem isSingle />
-                <MessageListItem isSingle isMine /> */}
                 {renderMessage()}
                 {isTyping && (
                     <div style={{ height: '40px' }}>

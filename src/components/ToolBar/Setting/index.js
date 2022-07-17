@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import classNames from 'classnames/bind';
 import styles from './setting.module.scss';
 
@@ -19,7 +19,6 @@ function Setting(props) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const currentUser = useSelector((state) => state.user.currentUser);
-
     const logOut = () => {
         const auth = getAuth();
         signOut(auth)

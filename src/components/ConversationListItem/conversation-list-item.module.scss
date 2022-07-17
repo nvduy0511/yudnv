@@ -3,32 +3,58 @@
     display: flex;
     align-items: center;
     padding: 10px;
-    box-sizing: border-box;
     gap: 10px;
+    border-radius: 8px;
+    box-sizing: border-box;
     &:hover {
         background: #eeeef1;
         cursor: pointer;
     }
-    .conversation-info {
-        flex: 1;
-    }
+}
 
-    .conversation-name {
-        font-size: 14px;
-        font-weight: bold;
-        text-transform: capitalize;
-        margin: 0;
+.conversation-item-unread {
+    span {
+        color: blue;
+        font-weight: 600;
     }
+}
 
-    .conversation-snippet {
-        width: 250px;
-        font-size: 14px;
-        color: #888;
-        margin: 0;
-        margin-top: 3px;
-        overflow: hidden !important;
-        display: inline-block;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+.is-select {
+    background-color: #eaf3ff;
+}
+
+.conversation-info {
+    flex: 1;
+}
+
+.conversation-name {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: capitalize;
+    margin: 0;
+}
+
+.conversation-snippet {
+    font-size: 14px;
+    color: #888;
+    margin: 0;
+    width: 210px;
+    margin-top: 3px;
+    overflow: hidden !important;
+    display: inline-block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conversation-unread {
+    display: flex;
+    width: 12px;
+    justify-content: center;
+    align-items: center;
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #1876f2;
     }
 }

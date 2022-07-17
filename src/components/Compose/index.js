@@ -7,12 +7,16 @@ import MicIcon from '@mui/icons-material/Mic';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import messageApi from '../../apis/messageApi';
 import store from '../../redux/store';
+import messageSlice from '../../redux/messageSlice';
+import { useDispatch } from 'react-redux';
 const cx = classNames.bind(styles);
 
 export default function Compose({ idRoom, userConversation }) {
     const editTextRef = useRef(null);
+    const dispatch = useDispatch();
     const [message, setMessage] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+
     const user = store.getState().user.currentUser;
     const socket = store.getState().socket.socketCurrent;
     const sendMessageToServer = async (data) => {
@@ -29,13 +33,16 @@ export default function Compose({ idRoom, userConversation }) {
             content: message,
             sender: user._id,
         };
-        socket.emit('sendMessage', { ...data, members: userConversation });
-
         sendMessageToServer(data);
 
+        socket.emit('sendMessage', { ...data, members: userConversation });
         setIsTyping(false);
         socket.emit('offTyping', idRoom);
-
+        dispatch(
+            messageSlice.actions.newMessageInConversation({
+                ...data,
+            }),
+        );
         setMessage('');
         editTextRef.current.focus();
     };

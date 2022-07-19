@@ -9,6 +9,7 @@ import messageApi from '../../apis/messageApi';
 import store from '../../redux/store';
 import Lottie from 'react-lottie';
 import animationData from '../../animation/typing.json';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const cx = classNames.bind(styles);
 
@@ -21,6 +22,8 @@ const defaultOptions = {
     },
 };
 
+const LIMIT = 20;
+
 export default function MessageList() {
     const socket = store.getState().socket.socketCurrent;
     const currentUser = useSelector((state) => state.user.currentUser);
@@ -30,10 +33,33 @@ export default function MessageList() {
     const [isTyping, setIsTyping] = useState(false);
     const [userConversation, setUserConversation] = useState([]);
     const messageContentRef = useRef(null);
-
+    const [page, setPage] = useState(1);
+    const [isPageChange, setIsPageChange] = useState(false);
     const scrollToBottom = (behavior) => {
         messageContentRef.current?.scrollIntoView({ behavior: behavior });
     };
+
+    useEffect(() => {
+        if (!isPageChange) {
+            scrollToBottom('smooth');
+        } else {
+            setIsPageChange(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isTyping, messages]);
+
+    useEffect(() => {
+        const getMessages = async () => {
+            try {
+                const res = await messageApi.getAllByIdRoom(conversationSelect._id, LIMIT, page);
+                setMessages((p) => [...res.data.reverse(), ...p]);
+            } catch (error) {
+                console.log('Error when call API get messages in MessageList!');
+            }
+        };
+        getMessages();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page]);
 
     useEffect(() => {
         const listener = (data) => {
@@ -67,19 +93,11 @@ export default function MessageList() {
                 if (item._id !== currentUser._id) userConversation.push(item._id);
             }
             setUserConversation(userConversation);
-
-            const getMessages = async () => {
-                try {
-                    const res = await messageApi.getAllByIdRoom(conversationSelect._id);
-                    setMessages(res.data);
-                } catch (error) {
-                    console.log('Error when call API get messages in MessageList!');
-                }
-            };
-            getMessages();
         }
+        scrollToBottom('smooth');
 
         return () => {
+            setPage(1);
             socket.off('message', listener);
             socket.off('onTyping', onTyping);
             socket.off('offTyping', offTyping);
@@ -88,10 +106,6 @@ export default function MessageList() {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [conversationSelect]);
-
-    useEffect(() => {
-        scrollToBottom('smooth');
-    }, [messages, isTyping]);
 
     const renderMessage = () => {
         const render = messages.map((item, index, elements) => {
@@ -122,10 +136,9 @@ export default function MessageList() {
             } else {
                 if (startsSequence) isSingle = true;
             }
-
             return (
                 <MessageListItem
-                    key={index}
+                    key={index + item.content}
                     isMine={isMine}
                     endsSequence={endsSequence}
                     startsSequence={startsSequence}
@@ -136,12 +149,26 @@ export default function MessageList() {
         });
         return render;
     };
+    const handleScrollTop = (e) => {
+        let element = e.target;
+        if (element.scrollTop === 0) {
+            setPage((p) => p + 1);
+            setIsPageChange(true);
+            element.scrollTop = 2;
+        }
+    };
+
     return (
         <div className={cx('message-list')}>
             <div className={cx('message-toolbar')}>
                 <MessageToolbar displayNameReceiver={nameConversation} />
             </div>
-            <div className={cx('message-content')}>
+            <div className={cx('message-content')} onScroll={handleScrollTop}>
+                {isPageChange && (
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress size="20px" />
+                    </div>
+                )}
                 {renderMessage()}
                 {isTyping && (
                     <div style={{ height: '40px' }}>

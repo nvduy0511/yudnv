@@ -17,5 +17,9 @@ const userApi = {
         const url = `user/get-all-not-include-me?_id=${_id}`;
         return axiosClient.get(url, { _id });
     },
+    changeName: (user) => {
+        const url = `user/change-name`;
+        return axiosClient.post(url, user);
+    },
 };
 export default userApi;

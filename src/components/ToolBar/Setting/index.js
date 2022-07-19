@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import classNames from 'classnames/bind';
 import styles from './setting.module.scss';
 
@@ -13,12 +13,17 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { persistor } from '../../../redux/store';
 import messageSlice from '../../../redux/messageSlice';
+import userSlice from '../../../redux/userSlice';
+import EditIcon from '@mui/icons-material/Edit';
+import userApi from '../../../apis/userApi';
 const cx = classNames.bind(styles);
 
 function Setting(props) {
+    const editNameRef = useRef();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const currentUser = useSelector((state) => state.user.currentUser);
+    const [isEdit, setIsEdit] = useState(false);
     const logOut = () => {
         const auth = getAuth();
         signOut(auth)
@@ -31,6 +36,32 @@ function Setting(props) {
                 alert('SignOut Fail');
             });
     };
+    const handleChangeName = (e) => {
+        dispatch(userSlice.actions.changeName(e.target.value));
+    };
+
+    const handleClickEditName = () => {
+        setIsEdit(true);
+        editNameRef.current.disabled = false;
+        editNameRef.current.focus();
+    };
+
+    const handleSaveNameToServer = (e) => {
+        const sendToServer = async () => {
+            try {
+                const res = await userApi.changeName({
+                    _id: currentUser._id,
+                    displayName: e.target.value,
+                });
+                if (res.data.status) setIsEdit(false);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        sendToServer();
+    };
+
     return (
         <div>
             <label htmlFor="nav-input" style={{ display: 'flex', alignItems: 'center' }}>
@@ -53,14 +84,23 @@ function Setting(props) {
                 </label>
                 <div>
                     <Avatar
+                        className={cx('avatar-user')}
                         sx={{ width: '100px', height: '100px', border: 'solid 1px #c6c6da' }}
                         src={currentUser && currentUser.photoURL}
-                    >
-                        U
-                    </Avatar>
-                    <h6 style={{ margin: '12px 0 0', fontSize: '18px' }}>
-                        {currentUser && currentUser.displayName}
-                    </h6>
+                    ></Avatar>
+                    <div className={cx('container-displayName')}>
+                        <input
+                            disabled={!isEdit}
+                            ref={editNameRef}
+                            className={cx('displayName')}
+                            value={currentUser && currentUser.displayName}
+                            onChange={handleChangeName}
+                            onBlur={handleSaveNameToServer}
+                        ></input>
+                        <div className={cx('icon-edit')} onClick={handleClickEditName}>
+                            {isEdit || <EditIcon />}
+                        </div>
+                    </div>
                 </div>
                 <ul className={cx('nav-list')}>
                     <label htmlFor="nav-input" className={cx('nav-item')}>

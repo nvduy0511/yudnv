@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux';
 import clsx from 'clsx';
 import messageSlice from '../../redux/messageSlice';
 import conversationApi from '../../apis/conversationApi';
-import store from '../../redux/store';
 
 const cx = classNames.bind(styles);
 export default function ConversationListItem({

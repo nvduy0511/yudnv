@@ -7,6 +7,7 @@ import './App.css';
 import socketIOClient from 'socket.io-client';
 import { useDispatch } from 'react-redux';
 import socketSlice from './redux/socketSlice';
+
 const host = 'http://localhost:3001';
 
 const socket = socketIOClient.connect(host);

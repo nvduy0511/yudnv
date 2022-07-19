@@ -12,6 +12,9 @@ const userSlice = createSlice({
         logout: (state, action) => {
             state.currentUser = {};
         },
+        changeName: (state, action) => {
+            state.currentUser.displayName = action.payload;
+        },
     },
 });
 

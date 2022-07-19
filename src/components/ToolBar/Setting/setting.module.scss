@@ -7,6 +7,43 @@
     }
 }
 
+.avatar-user {
+    img::after {
+        content: 'nvduy';
+    }
+}
+
+.container-displayName {
+    display: flex;
+    align-items: center;
+    padding: 12px 0 0;
+
+    .icon-edit {
+        display: flex;
+        align-items: center;
+        svg {
+            font-size: 20px;
+            color: rgb(97, 92, 92);
+        }
+    }
+}
+
+.displayName {
+    font-size: 18px;
+    outline: none;
+    border: none;
+
+    &:focus {
+        border: 1px solid rgb(165, 160, 160);
+        border-radius: 4px;
+    }
+    &:disabled {
+        background-color: transparent;
+        color: black;
+        font-weight: 600;
+    }
+}
+
 .overlay {
     position: fixed;
     top: 0;

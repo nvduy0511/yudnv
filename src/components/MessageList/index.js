@@ -47,16 +47,19 @@ export default function MessageList() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isTyping, messages]);
+    const getMessages = async () => {
+        try {
+            const res = await messageApi.getAllByIdRoom(conversationSelect._id, LIMIT, page);
+            if (Array.isArray(res.data)) {
+                console.log('message', res.data);
+                setMessages((p) => [...res.data.reverse(), ...p]);
+            }
+        } catch (error) {
+            console.log('Error when call API get messages in MessageList!');
+        }
+    };
 
     useEffect(() => {
-        const getMessages = async () => {
-            try {
-                const res = await messageApi.getAllByIdRoom(conversationSelect._id, LIMIT, page);
-                setMessages((p) => [...res.data.reverse(), ...p]);
-            } catch (error) {
-                console.log('Error when call API get messages in MessageList!');
-            }
-        };
         getMessages();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page]);
@@ -93,16 +96,20 @@ export default function MessageList() {
                 if (item._id !== currentUser._id) userConversation.push(item._id);
             }
             setUserConversation(userConversation);
+            if (page === 1) {
+                getMessages();
+            }
         }
         scrollToBottom('smooth');
 
         return () => {
-            setPage(1);
             socket.off('message', listener);
             socket.off('onTyping', onTyping);
             socket.off('offTyping', offTyping);
             setIsTyping(false);
             socket.emit('leaveRoom', conversationSelect._id);
+            setPage(1);
+            setMessages([]);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [conversationSelect]);
